@@ -4,6 +4,10 @@ Written for Arduino Nano and LCD I2C 1602.
 
 Original VESCUART.h code written by SolidGeek.
  */
+/*
+This code has been modified to display voltage to a BT Serial Monitor
+Written for Pixel 3, FlipSky VESC and ESP8266
+*/
 
 #include <VescUart.h>
 #include <SimpleKalmanFilter.h>
@@ -30,106 +34,6 @@ float batpercentage;
 
 SimpleKalmanFilter Filter1(2, 2, 0.01);
 
-////////// Custom Characters //////////
-byte ph[] = {
-  B11100,
-  B10100,
-  B11100,
-  B10000,
-  B10101,
-  B00111,
-  B00101,
-  B00101
-};
-
-byte mi[] = {
-  B10001,
-  B11011,
-  B10101,
-  B10001,
-  B00100,
-  B00000,
-  B00100,
-  B00110
-};
-
-byte km[] = {
-  B01000,
-  B01010,
-  B01100,
-  B01010,
-  B10001,
-  B11011,
-  B10101,
-  B10001
-};
-
-
-byte ah[] = {
-  B00100,
-  B01010,
-  B01110,
-  B01010,
-  B00000,
-  B01010,
-  B01110,
-  B01010
-};
-byte percent[] = {
-  B11001,
-  B11001,
-  B00010,
-  B00100,
-  B01000,
-  B10011,
-  B10011,
-  B00000
-};
-
-byte m[] = {
-  B10001,
-  B11011,
-  B10101,
-  B10001,
-  B10001,
-  B00000,
-  B00000,
-  B00000
-};
-
-byte k[] = {
-  B01000,
-  B01010,
-  B01100,
-  B01010,
-  B01010,
-  B00000,
-  B00000,
-  B00000
-};
-
-byte bat[] = {
-  B01110,
-  B11011,
-  B10001,
-  B10001,
-  B10001,
-  B11111,
-  B11111,
-  B11111
-};
-
-byte sprk[] = {
-  B00000,
-  B01000,
-  B00100,
-  B00010,
-  B00100,
-  B01000,
-  B00100,
-  B00010
-};
-
 
 
 void setup() {
@@ -145,27 +49,6 @@ void setup() {
   /** Define which ports to use as UART */
  UART.setSerialPort(&Serial);
 
-   lcd.init();                      // initialize the lcd 
-   lcd.backlight();
-
-  lcd.setCursor(3,0);
-  lcd.print("VESC EBIKE");          // Startup screen (can't be more than 10 characters)
-  lcd.createChar(5, bat);
-  lcd.setCursor(1,1);
-  lcd.write(5);
-  lcd.createChar(6, bat);
-  lcd.setCursor(14,1);
-  lcd.write(6);
-  lcd.createChar(7, sprk);
-  lcd.setCursor(1,0);
-  lcd.write(7);
-  lcd.createChar(8, sprk);
-  lcd.setCursor(14,0);
-  lcd.write(8);
-
-  
-  delay(5000);
-  lcd.clear();
 
 }
 void loop() {
@@ -189,86 +72,10 @@ void loop() {
   float powerfiltered = Filter1.updateEstimate(power);
   
 
-////////// LCD //////////
+////////// BT Display //////////
+  Serial.println(voltage + "V"); //Just add other print statements for other data as needed
+  Serial.println(batpercentage + "%");
   
-// First line  
-  if(velocity < 10){
-  lcd.setCursor(1,0);
-  lcd.print(" ");
-  lcd.print(velocity, 0);
-  }
-  else{
-  lcd.setCursor(1,0);
-  lcd.print(velocity, 0);
-  }
-  lcd.createChar(4, m);          // Change 'm' to 'k' for kilometers
-  lcd.setCursor(3,0);
-  lcd.write(4);
-  lcd.createChar(0, ph);
-  lcd.setCursor(4,0);
-  lcd.write(0);
-
-  lcd.setCursor(7,0);
-  lcd.print(voltage,0);
-  lcd.setCursor(9,0);
-  lcd.print("V");
-  
-  lcd.setCursor(11,0);
-  lcd.print(distance, 2);
-  lcd.createChar(1, mi);          // Change 'mi' to 'km' for kilometers
-  lcd.setCursor(15,0);
-  lcd.write(1);
-  
-// Second line
-if(powerfiltered < 10){
-  lcd.setCursor(0,1);
-  lcd.print("   ");
-  lcd.print(powerfiltered, 0);
-}
-if(powerfiltered > 10 && powerfiltered < 100){
-  lcd.setCursor(0,1);
-  lcd.print("  ");
-  lcd.print(powerfiltered, 0);
-}
-if(powerfiltered > 100 && powerfiltered < 1000){
-  lcd.setCursor(0,1);
-  lcd.print(" ");
-  lcd.print(powerfiltered, 0);
-}
-if(powerfiltered > 1000){
-  lcd.setCursor(0,1);
-  lcd.print(powerfiltered, 0);
-}
-  lcd.setCursor(4,1);
-  lcd.print("W");
- 
-if(batpercentage < 100){
-  lcd.setCursor(7,1);
-  lcd.print(batpercentage,0);
- }
- else{
-  lcd.setCursor(6,1);
-  lcd.print(batpercentage,0);
- }
-  lcd.createChar(3, percent);
-  lcd.setCursor(9,1);
-  lcd.write(3);
- 
-  lcd.setCursor(11,1);
-  lcd.print(amphour, 2);
-  lcd.createChar(2, ah);
-  lcd.setCursor(15,1);
-  lcd.write(2);
-  
-  lcd.println();
-  
-    }
-  else
-  {    
-    lcd.println("Failed to get data!");
-  }
- 
-    
   delay(50);
   
 }
